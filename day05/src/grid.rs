@@ -4,36 +4,8 @@ Grid type for 9x9 matrix coordinate.
 TODO: write tests
 */
 
+use crate::common::{Count, PointCount, Coordinate};
 use std::fmt;
-
-#[derive(Clone, Copy)]
-pub struct Point {
-    pub row: usize,
-    pub col: usize,
-}
-
-pub struct Count(pub usize);
-
-impl fmt::Display for Count {
-    fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result {
-        write!(f, "Count: {}", self.0)
-    }
-}
-
-pub struct PointCount {
-    point: Point,
-    count: Count,
-}
-
-impl fmt::Display for PointCount {
-    fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result {
-        write!(
-            f,
-            "Point ({},{}): Count={}",
-            self.point.row, self.point.col, self.count.0
-        )
-    }
-}
 
 pub struct Grid {
     cells: Vec<Vec<usize>>,
@@ -66,19 +38,19 @@ impl fmt::Display for Grid {
 }
 
 pub trait GridOperations {
-    fn add_point(&mut self, point: Point);
-    fn get_count(&self, point: &Point) -> Option<PointCount>;
+    fn add_point(&mut self, point: Coordinate);
+    fn get_count(&self, point: &Coordinate) -> Option<PointCount>;
 }
 
 impl GridOperations for Grid {
-    fn add_point(&mut self, point: Point) {
-        self.cells[point.row][point.col] += 1;
+    fn add_point(&mut self, point: Coordinate) {
+        self.cells[point.y][point.x] += 1;
     }
 
-    fn get_count(&self, point: &Point) -> Option<PointCount> {
+    fn get_count(&self, point: &Coordinate) -> Option<PointCount> {
         Some(PointCount {
             point: *point,
-            count: Count(self.cells[point.row][point.col]),
+            count: Count(self.cells[point.y][point.x]),
         })
     }
 }

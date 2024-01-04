@@ -1,48 +1,33 @@
-/* 
-Read file of lines into vector.
-
-For example:
-
-    0,9 -> 5,9
-    8,0 -> 0,8
-
-goes to:
-
-    vec![(0,9), (5,9), (8,0), (0,8)]
-
-TODO: write tests
-*/
+/// This module provides functionality to parse and handle Coordinates from a file.
+///
+/// It defines a `Coordinate` struct and implements the `FromStr` trait for it,
+/// allowing coordinates to be parsed from strings.
+/// It also provides a `parse_line` function for parsing a line of input into
+/// a vector of `Coordinate` instances, and a `read_file_to_points` function
+/// for reading a file of lines into a vector of `Coordinate` instances.
+///
+/// The module also includes tests for:
+///     * `Coordinate` struct
+///     * `parse_line` function
+///     * `read_file_to_points` function
+///
 use std::fs::File;
 use std::io::{BufRead, BufReader};
-use std::str::FromStr;
 
+use crate::common::Coordinate;
 
-pub struct Coordinate {
-    x: i32,
-    y: i32,
-}
-
-impl FromStr for Coordinate {
-    type Err = std::num::ParseIntError;
- 
-    fn from_str(s: &str) -> Result<Self, Self::Err> {
-        let parts: Vec<&str> = s.split(',').collect();
-        let x = parts[0].parse()?;
-        let y = parts[1].parse()?;
-        Ok(Coordinate { x, y })
-    }
- }
-
- fn parse_line(input: String) -> Result<Vec<Coordinate>, std::num::ParseIntError> {
+fn parse_line(input: String) -> Result<Vec<Coordinate>, std::num::ParseIntError> {
     input
         .split("->")
         .map(|coords| coords.trim())
         .filter(|coords| !coords.is_empty())
         .map(|coords| coords.parse())
         .collect()
- }
- 
- fn parse_file_to_points_pairs(reader: BufReader<File>) -> Result<Vec<Vec<Coordinate>>, Box<dyn std::error::Error>> {
+}
+
+fn parse_file_to_points_pairs(
+    reader: BufReader<File>,
+) -> Result<Vec<Vec<Coordinate>>, Box<dyn std::error::Error>> {
     let mut point_pairs = Vec::new();
     for line_result in reader.lines() {
         let line = line_result?;
@@ -50,19 +35,84 @@ impl FromStr for Coordinate {
         point_pairs.push(points);
     }
     Ok(point_pairs)
- }
- 
- pub fn read_file_to_points(path: &String) -> Result<Vec<Coordinate>, Box<dyn std::error::Error>> {
-    let mut coordinates = Vec::<Coordinate>::new();
+}
+
+pub fn read_file_to_points(
+    path: &String,
+) -> Result<Vec<Vec<Coordinate>>, Box<dyn std::error::Error>> {
     let file = File::open(path)?;
     let reader = BufReader::new(file);
- 
-    for line_result in reader.lines() {
-        let line = line_result?;
-        let coordinate: Coordinate = line.trim().parse()?;
-        coordinates.push(coordinate);
+    parse_file_to_points_pairs(reader)
+}
+
+#[cfg(test)]
+mod tests {
+    use super::*;
+
+    #[test]
+    fn test_coordinate_from_str() {
+        // Test case 1
+        let coord_str = "0,9";
+        let coord = coord_str.parse::<Coordinate>();
+        assert!(coord.is_ok());
+        assert_eq!(coord.unwrap(), Coordinate { x: 0, y: 9 });
+
+        // Test case 2
+        let coord_str = "5,9";
+        let coord = coord_str.parse::<Coordinate>();
+        assert!(coord.is_ok(), "Failed to parse coordinate: {}", coord_str);
+        assert_eq!(
+            coord.unwrap(),
+            Coordinate { x: 5, y: 9 },
+            "Coordinate parsed but not equal to expected value"
+        );
     }
- 
-    Ok(coordinates)
- }
- 
+
+    #[test]
+    fn test_parse_line() {
+        // Test case 1
+        let line = "0,9 -> 5,9";
+        let result = parse_line(line.to_string());
+        assert!(result.is_ok());
+        assert_eq!(
+            result.unwrap(),
+            vec![Coordinate { x: 0, y: 9 }, Coordinate { x: 5, y: 9 }],
+            "Failed to parse line: {}",
+            line
+        );
+
+        // Test case 2
+        let line = "8,0 -> 0,8";
+        let result = parse_line(line.to_string());
+        assert!(result.is_ok());
+        assert_eq!(
+            result.unwrap(),
+            vec![Coordinate { x: 8, y: 0 }, Coordinate { x: 0, y: 8 }],
+            "Failed to parse line: {}",
+            line
+        );
+    }
+
+    #[test]
+    fn test_read_file_to_points() {
+        // Test case 1
+        let path = "data/sample1.txt";
+        let result = read_file_to_points(&path.to_string());
+        assert!(result.is_ok());
+        assert_eq!(
+            result.unwrap(),
+            vec![
+                [Coordinate { x: 0, y: 9 }, Coordinate { x: 5, y: 9 }],
+                [Coordinate { x: 8, y: 0 }, Coordinate { x: 0, y: 8 }],
+                [Coordinate { x: 9, y: 4 }, Coordinate { x: 3, y: 4 }],
+                [Coordinate { x: 2, y: 2 }, Coordinate { x: 2, y: 1 }],
+                [Coordinate { x: 7, y: 0 }, Coordinate { x: 7, y: 4 }],
+                [Coordinate { x: 6, y: 4 }, Coordinate { x: 2, y: 0 }],
+                [Coordinate { x: 0, y: 9 }, Coordinate { x: 2, y: 9 }],
+                [Coordinate { x: 3, y: 4 }, Coordinate { x: 1, y: 4 }],
+                [Coordinate { x: 0, y: 0 }, Coordinate { x: 8, y: 8 }],
+                [Coordinate { x: 5, y: 5 }, Coordinate { x: 8, y: 2 }]
+            ]
+        )
+    }
+}
