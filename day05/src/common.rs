@@ -3,8 +3,8 @@ use std::str::FromStr;
 
 #[derive(Debug, PartialEq, Clone, Copy)]
 pub struct Coordinate {
-    pub x: usize,
-    pub y: usize,
+    pub row: usize,
+    pub col: usize,
 }
 
 impl FromStr for Coordinate {
@@ -12,12 +12,13 @@ impl FromStr for Coordinate {
 
     fn from_str(s: &str) -> Result<Self, Self::Err> {
         let parts: Vec<&str> = s.split(',').collect();
-        let x = parts[0].parse()?;
-        let y = parts[1].parse()?;
-        Ok(Coordinate { x, y })
+        let row = parts[0].parse()?;
+        let col = parts[1].parse()?;
+        Ok(Coordinate { row, col })
     }
 }
 
+#[derive(PartialEq, Debug)]
 pub struct Count(pub usize);
 
 impl fmt::Display for Count {
@@ -25,7 +26,7 @@ impl fmt::Display for Count {
         write!(f, "Count: {}", self.0)
     }
 }
-
+#[derive(PartialEq, Debug)]
 pub struct PointCount {
     pub point: Coordinate,
     pub count: Count,
@@ -36,20 +37,7 @@ impl fmt::Display for PointCount {
         write!(
             f,
             "Point ({},{}): Count={}",
-            self.point.x, self.point.y, self.count.0
+            self.point.col, self.point.row, self.count.0
         )
     }
 }
-
-pub struct Line {
-    pub start: Coordinate,
-    pub end: Coordinate,
-}
-
-impl Line {
-    pub fn new(start: Coordinate, end: Coordinate) -> Self {
-        Self { start, end }
-    }
-}
-
-
