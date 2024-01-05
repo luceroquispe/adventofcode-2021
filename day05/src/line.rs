@@ -1,3 +1,10 @@
+///
+/// This file defines a Line struct and a LineIterator struct.
+/// The Line struct represents a line with a start and end coordinate,
+/// and a list of all coordinates that the line passes through.
+///
+/// The LineIterator struct is an iterator that generates all coordinates
+/// from the start to the end of a line. Order doesn't matter.
 use crate::common::Coordinate;
 
 pub struct Step {
@@ -15,8 +22,8 @@ pub struct LineIterator {
 impl LineIterator {
     pub fn new(start: Coordinate, end: Coordinate) -> Self {
         let step = Step {
-            x: if start.col <= end.col { 1 } else { -1 },
-            y: if start.row <= end.row { 1 } else { -1 },
+            x: if start.x <= end.x { 1 } else { -1 },
+            y: if start.y <= end.y { 1 } else { -1 },
         };
         Self {
             current: start,
@@ -27,11 +34,11 @@ impl LineIterator {
     }
 
     fn update_current(&mut self) {
-        if self.current.col != self.end.col {
-            self.current.col = (self.current.col as i32 + self.step.x) as usize;
+        if self.current.x != self.end.x {
+            self.current.x = (self.current.x as i32 + self.step.x) as usize;
         }
-        if self.current.row != self.end.row {
-            self.current.row = (self.current.row as i32 + self.step.y) as usize;
+        if self.current.y != self.end.y {
+            self.current.y = (self.current.y as i32 + self.step.y) as usize;
         }
     }
 }
@@ -75,27 +82,27 @@ mod tests {
 
     #[test]
     fn test_to_line_coords_starting_at_zero() {
-        let line = Line::new(Coordinate { col: 0, row: 0 }, Coordinate { col: 5, row: 0 });
+        let line = Line::new(Coordinate { x: 0, y: 0 }, Coordinate { x: 5, y: 0 });
         let expected_coordinates = vec![
-            Coordinate { col: 0, row: 0 },
-            Coordinate { col: 1, row: 0 },
-            Coordinate { col: 2, row: 0 },
-            Coordinate { col: 3, row: 0 },
-            Coordinate { col: 4, row: 0 },
-            Coordinate { col: 5, row: 0 },
+            Coordinate { x: 0, y: 0 },
+            Coordinate { x: 1, y: 0 },
+            Coordinate { x: 2, y: 0 },
+            Coordinate { x: 3, y: 0 },
+            Coordinate { x: 4, y: 0 },
+            Coordinate { x: 5, y: 0 },
         ];
         assert_eq!(line.line_coordinates, expected_coordinates);
     }
 
     #[test]
     fn test_to_line_coords_unordered() {
-        let line = Line::new(Coordinate { col: 5, row: 1 }, Coordinate { col: 1, row: 1 });
+        let line = Line::new(Coordinate { x: 5, y: 1 }, Coordinate { x: 1, y: 1 });
         let expected_coordinates = vec![
-            Coordinate { col: 5, row: 1 },
-            Coordinate { col: 4, row: 1 },
-            Coordinate { col: 3, row: 1 },
-            Coordinate { col: 2, row: 1 },
-            Coordinate { col: 1, row: 1 },
+            Coordinate { x: 5, y: 1 },
+            Coordinate { x: 4, y: 1 },
+            Coordinate { x: 3, y: 1 },
+            Coordinate { x: 2, y: 1 },
+            Coordinate { x: 1, y: 1 },
         ];
         assert_eq!(line.line_coordinates, expected_coordinates);
     }
