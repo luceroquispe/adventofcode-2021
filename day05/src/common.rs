@@ -3,18 +3,18 @@ use std::str::FromStr;
 
 #[derive(Debug, PartialEq, Clone, Copy)]
 pub struct Coordinate {
-    pub row: usize,
-    pub col: usize,
+    pub y: usize,
+    pub x: usize,
 }
 
 impl FromStr for Coordinate {
     type Err = std::num::ParseIntError;
 
     fn from_str(s: &str) -> Result<Self, Self::Err> {
-        let parts: Vec<&str> = s.split(',').collect();
-        let row = parts[0].parse()?;
-        let col = parts[1].parse()?;
-        Ok(Coordinate { row, col })
+        let parts: Vec<&str> = s.trim().split(',').collect();
+        let col = parts[0].parse()?;
+        let row = parts[1].parse()?;
+        Ok(Coordinate { x: col, y: row })
     }
 }
 
@@ -37,7 +37,7 @@ impl fmt::Display for PointCount {
         write!(
             f,
             "Point ({},{}): Count={}",
-            self.point.col, self.point.row, self.count.0
+            self.point.x, self.point.y, self.count.0
         )
     }
 }
