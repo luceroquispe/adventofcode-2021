@@ -61,7 +61,10 @@ fn main() {
     let mut min_val = 0;
 
     for i in (0..=max_val).rev() {
-        let sum: i32 = vec.iter().map(|&x| (x - i).abs()).sum();
+        let sum: i32 = vec.iter().map(|&x| {
+            let steps: i32 = (x - i).abs();
+            (0..=steps).map(|x| x as i32).sum::<i32>()
+         }).sum();
         if sum < min_sum {
             min_sum = sum;
             min_val = i;
