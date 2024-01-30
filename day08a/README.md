@@ -67,3 +67,131 @@ fgae cfgab fg bagce
 Because the digits 1, 4, 7, and 8 each use a unique number of segments, you should be able to tell which combinations of signals correspond to those digits. Counting only digits in the output values (the part after | on each line), in the above example, there are 26 instances of digits that use a unique number of segments (highlighted above).
 
 In the output values, how many times do digits 1, 4, 7, or 8 appear?
+
+## Part Two
+
+Through a little deduction, you should now be able to determine the remaining digits. Consider again the first example above:
+
+acedgfb cdfbe gcdfa fbcad dab cefabd cdfgeb eafb cagedb ab |
+cdfeb fcadb cdfeb cdbaf
+After some careful analysis, the mapping between signal wires and segments only make sense in the following configuration:
+
+ dddd
+e    a
+e    a
+ ffff
+g    b
+g    b
+ cccc
+So, the unique signal patterns would correspond to the following digits:
+
+acedgfb: 8
+cdfbe: 5
+gcdfa: 2
+fbcad: 3
+dab: 7
+cefabd: 9
+cdfgeb: 6
+eafb: 4
+cagedb: 0
+ab: 1
+Then, the four digits of the output value can be decoded:
+
+cdfeb: 5
+fcadb: 3
+cdfeb: 5
+cdbaf: 3
+Therefore, the output value for this entry is 5353.
+
+Following this same process for each entry in the second, larger example above, the output value of each entry can be determined:
+
+fdgacbe cefdb cefbgd gcbe: 8394
+fcgedb cgb dgebacf gc: 9781
+cg cg fdcagb cbg: 1197
+efabcd cedba gadfec cb: 9361
+gecf egdcabf bgf bfgea: 4873
+gebdcfa ecba ca fadegcb: 8418
+cefg dcbef fcge gbcadfe: 4548
+ed bcgafe cdgba cbgef: 1625
+gbdfcae bgc cg cgb: 8717
+fgae cfgab fg bagce: 4315
+Adding all of the output values in this larger example produces 61229.
+
+For each entry, determine all of the wire/segment connections and decode the four-digit output values. What do you get if you add up all of the output values?
+
+## Part Two breakdown in English
+
+```
+  0:      1:      2:      3:      4:
+ aaaa    ....    aaaa    aaaa    ....
+b    c  .    c  .    c  .    c  b    c
+b    c  .    c  .    c  .    c  b    c
+ ....    ....    dddd    dddd    dddd
+e    f  .    f  e    .  .    f  .    f
+e    f  .    f  e    .  .    f  .    f        Answer:
+ gggg    ....    gggg    gggg    ....         TOP = d
+                                              TOP RIGHT = b
+  5:      6:      7:      8:      9:          TOP LEFT = g
+ aaaa    aaaa    aaaa    aaaa    aaaa         MIDDLE = c
+b    .  b    .  .    c  b    c  b    c        BOTTOM RIGHT = e
+b    .  b    .  .    c  b    c  b    c        BOTTOM LEFT = a
+ dddd    dddd    ....    dddd    dddd         BOTTOM = f
+.    f  e    f  .    f  e    f  .    f
+.    f  e    f  .    f  e    f  .    f
+ gggg    gggg    ....    gggg    gggg
+```
+
+Known counts:
+Number: SegmentCount
+0 = 6
+1 = 2
+2 = 5
+3 = 5
+4 = 4 
+5 = 5
+6 = 6
+7 = 3
+8 = 7
+9 = 6
+
+Sample:
+
+```bash
+be cfbegad cbdgef fgaecd cgeb fdcge agebfd fecdb fabcd edb | fdgacbe cefdb cefbgd gcbe
+edbfga begcd cbg gc gcadebf fbgde acbgfd abcde gfcbed gfec | fcgedb cgb dgebacf gc
+fgaebd cg bdaec gdafb agbcfd gdcbef bgcad gfac gcb cdgabef | cg cg fdcagb cbg
+fbegcd cbd adcefb dageb afcb bc aefdc ecdab fgdeca fcdbega | efabcd cedba gadfec cb
+aecbfdg fbg gf bafeg dbefa fcge gcbea fcaegb dgceab fcbdga | gecf egdcabf bgf bfgea
+fgeab ca afcebg bdacfeg cfaedg gcfdb baec bfadeg bafgc acf | gebdcfa ecba ca fadegcb
+dbcfg fgd bdegcaf fgec aegbdf ecdfab fbedc dacgb gdcebf gf | cefg dcbef fcge gbcadfe
+bdfegc cbegaf gecbf dfcage bdacg ed bedf ced adcbefg gebcd | ed bcgafe cdgba cbgef
+egadfb cdbfeg cegd fecab cgb gbdefca cg fgcdab egfdb bfceg | gbdfcae bgc cg cgb
+gcafb gcf dcaebfg ecagb gf abcdeg gaef cafbge fdbac fegbdc | fgae cfgab fg bagce
+```
+
+Using top row logic only and starting with unique count of letters:
+
+be = 1 (since count of 2)
+edb = 7 (since count of 3)
+cgeb = 4 (since count of 4)
+cfbegad = 8 (since count of 7)
+
+
+Letter map to corresponding segment
+d = Top since diff between 1 and 7 leaves Top edge
+b = Top Right since edb (7) and fgaecd (6) overlap 2/3 segments. Remaining is b.
+e = Bottom Right since edb are all known except e. Bottom right last remaining of 7
+a = Bottom Left since 6 and 5 both don't have Top Right (b) but also 5 doesn't have bottom left
+c = Middle since Zero is missing only one
+f = Bottom because number 3 - 7 - Middle leaves Bottom
+g = Top Left since last one remaining
+
+ANSWER for first line:
+
+ dddd 
+g    b
+g    b
+ cccc 
+a    e
+a    e
+ ffff 
