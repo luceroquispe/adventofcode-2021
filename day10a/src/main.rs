@@ -10,16 +10,24 @@ impl Bracket {
     fn new() -> Bracket {
         Bracket {
             bracket_vec: vec![],
-            open_brackets: vec!["(".to_string(), "[".to_string(), "{".to_string(), "<".to_string()],
+            open_brackets: vec![
+                "(".to_string(),
+                "[".to_string(),
+                "{".to_string(),
+                "<".to_string(),
+            ],
             closed_brackets: [
                 (")".to_string(), "(".to_string()),
                 ("]".to_string(), "[".to_string()),
                 ("}".to_string(), "{".to_string()),
                 (">".to_string(), "<".to_string()),
-            ].iter().cloned().collect(),
+            ]
+            .iter()
+            .cloned()
+            .collect(),
         }
     }
-    
+
     fn check_bracket(&mut self, bracket: &str) -> Result<(), String> {
         if self.open_brackets.contains(&bracket.to_string()) {
             self.bracket_vec.push(bracket.to_string());
@@ -29,14 +37,15 @@ impl Bracket {
                 self.bracket_vec.pop();
                 Ok(())
             } else {
-                Err(format!("Expected {}, but found {} instead.", matching_bracket, bracket))
+                Err(format!(
+                    "Expected {}, but found {} instead.",
+                    matching_bracket, bracket
+                ))
             }
         } else {
             Err(format!("Unexpected bracket: {}", bracket))
         }
     }
-
-    fn 
 }
 
 fn main() {
