@@ -1,59 +1,95 @@
-use std::collections::HashMap;
+use std::collections::VecDeque;
 
 struct Bracket {
-    bracket_vec: Vec<String>,
-    open_brackets: Vec<String>,
-    closed_brackets: HashMap<String, String>,
+    open_bracket_stack: VecDeque<char>,
+    bracket_pairs: Vec<(char, char)>,
 }
 
 impl Bracket {
     fn new() -> Bracket {
         Bracket {
-            bracket_vec: vec![],
-            open_brackets: vec![
-                "(".to_string(),
-                "[".to_string(),
-                "{".to_string(),
-                "<".to_string(),
-            ],
-            closed_brackets: [
-                (")".to_string(), "(".to_string()),
-                ("]".to_string(), "[".to_string()),
-                ("}".to_string(), "{".to_string()),
-                (">".to_string(), "<".to_string()),
-            ]
-            .iter()
-            .cloned()
-            .collect(),
+            open_bracket_stack: VecDeque::new(),
+            bracket_pairs: vec![('(', ')'), ('[', ']'), ('{', '}'), ('<', '>')],
         }
     }
 
-    fn check_bracket(&mut self, bracket: &str) -> Result<(), String> {
-        if self.open_brackets.contains(&bracket.to_string()) {
-            self.bracket_vec.push(bracket.to_string());
-            Ok(())
-        } else if let Some(matching_bracket) = self.closed_brackets.get(bracket) {
-            if self.bracket_vec.last() == Some(matching_bracket) {
-                self.bracket_vec.pop();
-                Ok(())
-            } else {
-                Err(format!(
-                    "Expected {}, but found {} instead.",
-                    matching_bracket, bracket
-                ))
-            }
-        } else {
-            Err(format!("Unexpected bracket: {}", bracket))
+    fn validate_syntax(&mut self, brackets: &str) -> Result<(), String> {
+        for bracket in brackets.chars() {
+            self.check_bracket(bracket)?;
         }
+        Ok(())
+    }
+
+    fn check_bracket(&mut self, bracket: char) -> Result<(), String> {
+        match bracket {
+            '(' | '[' | '{' | '<' => {
+                self.handle_open_bracket(bracket);
+                Ok(())
+            }
+            ')' | ']' | '}' | '>' => self.handle_closed_bracket(bracket),
+            _ => Err(format!("Invalid character: {}", bracket)),
+        }
+    }
+
+    fn handle_open_bracket(&mut self, bracket: char) {
+        self.open_bracket_stack.push_back(bracket);
+    }
+
+    fn handle_closed_bracket(&mut self, closed_bracket: char) -> Result<(), String> {
+        if let Some(last_open) = self.open_bracket_stack.pop_back() {
+            if let Some((_, expected_close)) = self
+                .bracket_pairs
+                .iter()
+                .find(|&(open, _)| *open == last_open)
+            {
+                if closed_bracket == *expected_close {
+                    return Ok(());
+                } else {
+                    return Err(format!(
+                        "Expected {}, but found {} instead.",
+                        expected_close, closed_bracket
+                    ));
+                }
+            }
+        }
+        Err(String::from("Unexpected closing bracket"))
     }
 }
 
 fn main() {
+    let input_brackets = String::from("[{[{({}]{}}([{[{{{}}([]");
     let mut bracket = Bracket::new();
-    println!("Open brackets: {:?}", bracket.open_brackets);
-    println!("Closed brackets: {:?}", bracket.closed_brackets);
-    match bracket.check_bracket("(") {
-        Ok(_) => println!("Bracket checked successfully: {:?}", bracket.bracket_vec),
-        Err(e) => println!("Error checking bracket: {}", e),
+    let check_brackets = bracket.validate_syntax(&input_brackets);
+    println!("Syntax check: {:?}", check_brackets);
+    println!("Bracket pairs: {:?}", bracket.bracket_pairs);
+}
+
+#[cfg(test)]
+mod tests {
+    use super::*;
+
+    #[test]
+    fn test_corrupted_lines() {
+        let mut bracket = Bracket::new();
+        let examples = vec![
+            "{([(<{}[<>[]}>{[]{[(<()>",
+            "[[<[([]))<([[{}[[()]]]",
+            "[{[{({}]{}}([{[{{{}}([]",
+            "[<(<(<(<{}))><([]([]()",
+            "<{([([[(<>()){}]>(<<{{",
+        ];
+
+        let expected_errors = vec![
+            "Expected ], but found } instead.",
+            "Expected ], but found ) instead.",
+            "Expected ), but found ] instead.",
+            "Expected >, but found ) instead.",
+            "Expected ], but found > instead.",
+        ];
+
+        for (example, expected_error) in examples.into_iter().zip(expected_errors.into_iter()) {
+            let result = bracket.validate_syntax(&example);
+            assert_eq!(result.unwrap_err().as_str(), expected_error);
+        }
     }
 }
