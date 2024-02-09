@@ -142,7 +142,7 @@ mod tests {
         // Arrange, Act
         let mut state = ParserState::new();
         handle_opening_bracket(&mut state, '(');
-        handle_closing_bracket(&mut state, ')');
+        let _ = handle_closing_bracket(&mut state, ')');
         assert!(state.completion_string().is_empty())
     }
 
@@ -152,7 +152,7 @@ mod tests {
         let mut state = ParserState::new();
         handle_opening_bracket(&mut state, '(');
         handle_opening_bracket(&mut state, '(');
-        handle_closing_bracket(&mut state, ')');
+        let _ = handle_closing_bracket(&mut state, ')');
         // Finds stack has "(" then returns matching completion
         assert_eq!(state.completion_string(), ")");
     }
