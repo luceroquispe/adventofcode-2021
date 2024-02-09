@@ -66,11 +66,16 @@ fn handle_opening_bracket(state: &mut ParserState, ch: char) {
         _ => (),
     }
 }
-fn handle_closing_bracket(state: &mut ParserState, ch: char) -> bool {
-    // assume its fine for now
-    let mut is_corrupt: bool = false;
+fn handle_closing_bracket(state: &mut ParserState, ch: char) -> Result<(), String> {
     match ch {
         ')' | ']' | '}' | '>' => {
+            let expected = match state.stack.last() {
+                Some(&Bracket::Round) => ')',
+                Some(&Bracket::Square) => ']',
+                Some(&Bracket::Curly) => '}',
+                Some(&Bracket::Angle) => '>',
+                None => return Err(format!("Expected opening bracket, but found {} instead.", ch)),
+            };
             if state
                 .pop(match ch {
                     ')' => Bracket::Round,
@@ -81,12 +86,12 @@ fn handle_closing_bracket(state: &mut ParserState, ch: char) -> bool {
                 })
                 .is_none()
             {
-                is_corrupt = true;
+                return Err(format!("Expected {}, but found {} instead.", expected, ch));
             }
         }
         _ => (),
     }
-    is_corrupt
+    Ok(())
 }
 
 fn find_median_score(scores: &mut Vec<i64>) -> i64 {
@@ -99,19 +104,25 @@ fn find_median_score(scores: &mut Vec<i64>) -> i64 {
 fn main() {
     let mut scores = Vec::new();
     let lines: Vec<&str> = include_str!("../data/data.txt").lines().collect();
-
+    println!("lines: {:?}", lines);
     for line in lines {
         let mut state = ParserState::new();
+        let mut corrupted = false;
         for ch in line.chars() {
-            if handle_closing_bracket(&mut state, ch) {
-                break; // Corrupted line, stop parsing
-            } else {
-                handle_opening_bracket(&mut state, ch);
+            match handle_closing_bracket(&mut state, ch) {
+                Ok(_) => handle_opening_bracket(&mut state, ch),
+                Err(e) => {
+                    println!("{}", e);
+                    corrupted = true;
+                    break; // Corrupted line, stop parsing
+                }
             }
         }
-        let completion = state.completion_string();
-        let score = calculate_score(&completion);
-        scores.push(score);
+        if !corrupted {
+            let completion = state.completion_string();
+            let score = calculate_score(&completion);
+            scores.push(score);
+        }
     }
 
     // Sort the scores and find the middle score
@@ -145,15 +156,30 @@ mod tests {
         // Finds stack has "(" then returns matching completion
         assert_eq!(state.completion_string(), ")");
     }
-
     #[test]
-    fn test_handle_closing_bracket_matching_ok() {
-        // Arrange
-        let mut state = ParserState::new();
-        state.push(Bracket::Round); // Opening bracket
-        state.push(Bracket::Square); // Another opening bracket
-        assert_eq!(handle_closing_bracket(&mut state, ']'), false); // Correct closing bracket
-        assert_eq!(handle_closing_bracket(&mut state, ')'), false); // Correct closing bracket
+    fn test_corrupted_lines() {
+        let examples = vec![
+            ("{([(<{}[<>[]}>{[]{[(<()>", "Expected ], but found } instead."),
+            ("[[<[([]))<([[{}[[()]]]", "Expected ], but found ) instead."),
+            ("[{[{({}]{}}([{[{{{}}([]", "Expected ), but found ] instead."),
+            ("[<(<(<(<{}))><([]([]()", "Expected >, but found ) instead."),
+            ("<{([([[(<>()){}]>(<<{{", "Expected ], but found > instead."),
+        ];
+
+        for (input, expected_error) in examples {
+            let mut state = ParserState::new();
+            let mut actual_error = String::new();
+            for ch in input.chars() {
+                match handle_closing_bracket(&mut state, ch) {
+                    Ok(_) => handle_opening_bracket(&mut state, ch),
+                    Err(e) => {
+                        actual_error = e;
+                        break;
+                    }
+                }
+            }
+            assert_eq!(actual_error, expected_error);
+        }
     }
 
     #[test]
