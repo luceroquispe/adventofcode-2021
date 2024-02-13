@@ -372,17 +372,7 @@ Given the starting energy levels of the dumbo octopuses in your cavern, simulate
 
 ## Thoughts
 
-* Each cell has a reference grid of 9 other cells. ENUM TopLeft, Top etc
-* There are 8 different cell types:
-    - bottom left corner (5 empty neighbours)
-    - bottom right corner (5 empty neighbours)
-    - top left corner (5 empty neighbours)
-    - top right corner (5 empty neighbours)
-    - bottom (3 empty neighbours)
-    - left (3 empty neighbours)
-    - right (3 empty neighbours)
-    - top (3 empty neighbours)
-* There are 2 processes which trigger a flash:
-    1. step
-    2. neighbour flash. Note its possible to be triggered by all 8 neighbours!
+* Each cell has a reference grid of maximum 8 other cells or less for corners and edges.
+* Instead of looking for > 9 and then incrementing neighbours by one, increment current and additional one energy for all neighbouring 9's. 
+* 9's go to zero until the flashes have completed for that step
  
